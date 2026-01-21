@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Todo App</title>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            display: flex;
+            justify-content: center;
+            padding-top: 50px;
+        }
+
+        .container {
+            background: white;
+            width: 420px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        button.add {
+            background: #4CAF50;
+            color: white;
+        }
+
+        button.add:hover {
+            background: #43a047;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            background: #f9f9f9;
+            transition: background 0.2s;
+        }
+
+        li:hover {
+            background: #eef2f7;
+        }
+
+        li input {
+            flex: 1;
+        }
+
+        button.update {
+            background: #2196F3;
+            color: white;
+        }
+
+        button.update:hover {
+            background: #1e88e5;
+        }
+
+        button.delete {
+            background: #f44336;
+            color: white;
+        }
+
+        button.delete:hover {
+            background: #e53935;
+        }
+
+        .empty {
+            text-align: center;
+            color: #888;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+
+{% raw %}
+<div id="app" class="container">
+    <h1>📝 Todo App</h1>
+
+    <!-- Add Todo -->
+    <div class="input-row">
+        <input v-model="newTodo" placeholder="Enter a task..." />
+        <button class="add" @click="addTodo">Add</button>
+    </div>
+
+    <!-- Todo List -->
+    <ul v-if="todos.length">
+        <li v-for="todo in todos" :key="todo.id">
+            <input v-model="todo.title" />
+            <button class="update" @click="updateTodo(todo)">Update</button>
+            <button class="delete" @click="deleteTodo(todo.id)">Delete</button>
+        </li>
+    </ul>
+
+    <p v-else class="empty">No tasks yet 👀</p>
+</div>
+{% endraw %}
+
+<script>
+const { createApp } = Vue;
+
+createApp({
+    data() {
+        return {
+            todos: [],
+            newTodo: ""
+        }
+    },
+    mounted() {
+        this.fetchTodos();
+    },
+    methods: {
+        fetchTodos() {
+            fetch("/api/todos/")
+                .then(res => res.json())
+                .then(data => {
+                    // Convert backend tuples → objects if needed
+                    this.todos = data.map(t =>
+                        Array.isArray(t)
+                            ? { id: t[0], title: t[1] }
+                            : t
+                    );
+                });
+        },
+
+        addTodo() {
+            if (!this.newTodo.trim()) return;
+
+            fetch("/api/todos/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: this.newTodo })
+            }).then(() => {
+                this.newTodo = "";
+                this.fetchTodos();
+            });
+        },
+
+        updateTodo(todo) {
+            fetch(`/api/todos/${todo.id}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title: todo.title })
+            }).then(() => this.fetchTodos());
+        },
+
+        deleteTodo(id) {
+            fetch(`/api/todos/${id}`, {
+                method: "DELETE"
+            }).then(() => this.fetchTodos());
+        }
+    }
+}).mount("#app");
+</script>
+
+</body>
+</html>
