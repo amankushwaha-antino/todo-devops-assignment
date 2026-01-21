@@ -1,4 +1,25 @@
+# Todo Management Application
 
+A simple and user-friendly **Todo Management Web Application** that allows users to create, view, update, and delete tasks through a clean web interface.
+
+The application uses a REST-based architecture where the frontend communicates with backend APIs to manage tasks stored in a database.
+
+---
+
+## 🚀 Features
+
+- Create new todo tasks
+- View all existing tasks
+- Update task titles
+- Delete tasks
+- Real-time UI updates
+- Persistent data storage
+
+---
+
+## 🌐 Application Access
+
+Once the application is running, open your browser and visit:
 
 # Todo Management Application
 
